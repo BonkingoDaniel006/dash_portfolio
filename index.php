@@ -17,6 +17,7 @@ $articles = $pdo->query($sql)->fetchAll();
 
 
 <div>
+    <a href="/ajouter.php">Ajouter un article</a>
     <?php foreach ($articles as $a) : ?>
         <article>
             <h2><?= htmlspecialchars($a['titre']) ?></h2>
