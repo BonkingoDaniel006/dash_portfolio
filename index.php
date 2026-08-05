@@ -27,7 +27,8 @@ $articles = $pdo->query($sql)->fetchAll();
             </div>
             <a href="/article.php?id=<?= $a['id'] ?>"
                                class="btn btn-outline-primary btn-sm">Lire la suite</a>
-        </article> <hr>
+        </article>
+        <a href="/supprimer.php?id=<?= $a['id'] ?>" >Supprimer</a> <hr>
         
     <?php endforeach; ?>
 </div>
