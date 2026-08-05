@@ -1,0 +1,147 @@
+/* style.css */
+
+/* --- Variables de couleur et de police --- */
+:root {
+    --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --primary-color: #0d6efd; /* Bleu Bootstrap pour la cohérence */
+    --text-color: #212529;
+    --background-color: #f8f9fa;
+    --border-color: #dee2e6;
+    --white-color: #fff;
+}
+
+/* --- Styles généraux --- */
+body {
+    font-family: var(--font-family-sans);
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    margin: 0;
+    padding: 20px;
+}
+
+/* --- Conteneur principal --- */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Typographie --- */
+h1, h2 {
+    color: #333;
+    line-height: 1.2;
+}
+
+h1 {
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+}
+
+h2 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--border-color);
+    margin: 2rem 0;
+}
+
+/* --- Articles --- */
+article {
+    margin-bottom: 2rem;
+}
+
+article p:first-of-type {
+    color: #6c757d;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+/* --- Liens et Boutons --- */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    text-align: center;
+    border: 1px solid var(--primary-color);
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #0b5ed7;
+    text-decoration: none;
+}
+
+/* --- Styles pour la modale --- */
+.modal {
+    display: none; /* Cachée par défaut */
+    position: fixed; /* Reste en place lors du défilement */
+    z-index: 1000; /* Se place au-dessus de tout */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Permet le défilement si le contenu est trop grand */
+    background-color: rgba(0, 0, 0, 0.5); /* Fond semi-transparent */
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto; /* 15% du haut et centré horizontalement */
+    padding: 2rem;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-actions {
+    text-align: right;
+    margin-top: 1.5rem;
+}
+
+.btn-danger { background-color: #dc3545; border-color: #dc3545; }
+.btn-secondary { background-color: #6c757d; border-color: #6c757d; }

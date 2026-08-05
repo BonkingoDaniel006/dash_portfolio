@@ -25,7 +25,20 @@ if (!$article) {
 }
 ?>
 
-<h1><?= htmlspecialchars($article['titre']) ?></h1>
-<p><em>Publié le <?= formaterDate($article['date_publication']) ?> par <?= htmlspecialchars($article['auteur_name']) ?> dans la catégorie <?= htmlspecialchars($article['categorie_nom']) ?></em></p>
-<hr>
-<p><?= nl2br(htmlspecialchars($article['contenu'])) ?></p>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title><?= htmlspecialchars($article['titre']) ?></title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1><?= htmlspecialchars($article['titre']) ?></h1>
+        <p>Publié le <?= formaterDate($article['date_publication']) ?> par <?= htmlspecialchars($article['auteur_name']) ?> dans la catégorie <?= htmlspecialchars($article['categorie_nom']) ?></p>
+        <hr>
+        <div><?= nl2br(htmlspecialchars($article['contenu'])) ?></div>
+        <a href="/" style="margin-top: 2rem; display: inline-block;">&laquo; Retour à l'accueil</a>
+    </div>
+</body>
+</html>

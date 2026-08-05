@@ -1,70 +1,82 @@
 <?php
-require "config.php";
-require "functions.php";
+require_once 'config.php';
+require_once 'functions.php';
 
-$erreurs    = [];
-$titre      = "";
-$categorie  = "";
-$contenu    = "";
-$tags       = "";
+// 1. Valider et récupérer l'ID de l'article depuis l'URL
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if (!$id) {
+    header("Location: index.php");
+    exit;
+}
 
+// 2. Récupérer les données actuelles de l'article pour pré-remplir le formulaire
+$stmt = $pdo->prepare("SELECT a.*, c.nom AS categorie_nom FROM articles a JOIN categories c ON a.categorie_id = c.id WHERE a.id = ?");
+$stmt->execute([$id]);
+$article = $stmt->fetch();
+
+// Si l'article n'existe pas, rediriger
+if (!$article) {
+    header("Location: index.php");
+    exit;
+}
+
+// Initialisation des variables
+$erreurs = [];
+$titre = $article['titre'];
+$categorie = $article['categorie_nom'];
+$contenu = $article['contenu'];
+$tags = $article['tags'];
+
+// 3. Traiter le formulaire lorsqu'il est soumis (méthode POST)
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Nettoyer et récupérer les données du formulaire
+    $titre     = trim($_POST["titre"] ?? '');
+    $categorie = trim($_POST["categorie"] ?? '');
+    $contenu   = trim($_POST["contenu"] ?? '');
+    $tags      = trim($_POST["tags"] ?? '');
 
-    $titre     = trim($_POST["titre"]);
-    $categorie = trim($_POST["categorie"]);
-    $contenu   = trim($_POST["contenu"]);
-    $tags      = trim($_POST["tags"]);
-
+    // Validation (similaire à ajouter-article.php)
     if (strlen($titre) < 5) {
         $erreurs["titre"] = "Le titre doit faire au moins 5 caractères.";
-    } elseif (strlen($titre) > 200) {
-        $erreurs["titre"] = "Le titre ne doit pas dépasser 200 caractères.";
     }
-
-    $categoriesValides = ["Technologie", "Voyage", "Cuisine", "Lifestyle"];
-    if (!in_array($categorie, $categoriesValides)) {
-        $erreurs["categorie"] = "Veuillez choisir une catégorie valide.";
+    if (empty($categorie)) {
+        $erreurs["categorie"] = "Veuillez choisir une catégorie.";
     }
-
     if (strlen($contenu) < 50) {
         $erreurs["contenu"] = "Le contenu doit faire au moins 50 caractères.";
     }
 
+    // S'il n'y a pas d'erreurs, procéder à la mise à jour
     if (count($erreurs) === 0) {
-        // Récupérer l'id de la catégorie à partir de son nom
-        $stmt = $pdo->prepare("SELECT id FROM categories WHERE nom = ?");
-        $stmt->execute([$categorie]);
-        $categorieId = $stmt->fetchColumn();
+        // Récupérer l'ID de la catégorie à partir de son nom
+        $stmtCat = $pdo->prepare("SELECT id FROM categories WHERE nom = ?");
+        $stmtCat->execute([$categorie]);
+        $categorieId = $stmtCat->fetchColumn();
 
-        // Générer un extrait automatiquement
-        $extrait = genererExtrait($contenu, 200);
+        // Requête de mise à jour
+        $sql = "UPDATE articles SET titre = ?, contenu = ?, categorie_id = ?, tags = ? WHERE id = ?";
+        $stmtUpdate = $pdo->prepare($sql);
+        $stmtUpdate->execute([$titre, $contenu, $categorieId, $tags, $id]);
 
-        // INSERT préparé (sécurisé contre les injections SQL)
-        $sql = "INSERT INTO articles (titre, contenu, extrait, auteur_id, categorie_id, tags)
-                VALUES (?, ?, ?, ?, ?, ?)";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            $titre, $contenu, $extrait, 1, $categorieId, $tags
-        ]);
-
-        // Redirection vers la page d'accueil
+        // Rediriger vers la page d'accueil après la mise à jour
         header("Location: index.php");
         exit;
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>WebBlog — Ajouter un article</title>
+    <title>WebBlog — Modifier un article</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Ajouter un article</h1>
+    <div class="container">
+        <h1>Modifier un article</h1>
 
-        <form method="POST" action="ajouter-article.php" class="mt-4">
+        <form method="POST" action="modifier-article.php?id=<?= $id ?>" class="mt-4">
             <div class="mb-3">
                 <label class="form-label">Titre</label>
                 <input type="text" name="titre" class="form-control" value="<?= htmlspecialchars($titre) ?>">
@@ -103,7 +115,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <?php endif; ?>
             </div>
 
-            <button type="submit" class="btn btn-primary">Publier</button>
+            <button type="submit" class="btn">Mettre à jour</button>
+            <a href="/" style="margin-left: 10px;">Annuler</a>
         </form>
     </div>
 
