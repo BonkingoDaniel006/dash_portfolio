@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>WebBlog — Accueil</title>
+    <link rel="stylesheet" href="/frontend/uploads/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Mon Super Blog</h1>
+        <a href="/ajouter-article.php" class="btn">Ajouter un article</a>
+        <hr>
+        <!-- Conteneur sémantiquement correct (div au lieu de article) pour accueillir les articles -->
+        <div id="articles-container">
+            <p>Chargement des articles...</p>
+        </div>
+        
+    </div>
+
+    <!-- Modale de confirmation de suppression -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Confirmer la suppression</h2>
+            <p>Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible.</p>
+            <div class="modal-actions">
+                <button id="cancelDelete" class="btn btn-secondary">Annuler</button>
+                <button id="confirmDelete" class="btn btn-danger">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        //Attendre que la page html soit completement chargée
+        document.addEventListener('DOMContentLoaded', () =>{
+            chargerArticles();
+        })
+        function chargerArticles() {
+            fetch('../../backend/index.php') // Correction du chemin d'accès
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Erreur réseau lors de la récupération"); // Correction: point-virgule retiré
+                    }
+                    return response.json();
+                })
+                .then(articles => {
+                    const container = document.getElementById('articles-container'); // Correction: articles au pluriel
+                    container.innerHTML = '';
+                    if (articles.length === 0){
+                        container.innerHTML = '<p>Aucun article trouvé.</p>';
+                        return;
+                    }
+                    articles.forEach(article => {
+                        const articleElement = document.createElement('article');
+                        // Correction: innerHTML au lieu de innerHtml
+                        // Correction: La logique d'ajout de l'élément a été sortie de la chaîne de caractères.
+                        // Ajout des liens pour modifier et supprimer. Correction du chemin pour modifier.
+                        articleElement.innerHTML = `
+                        <h2>${echapperHTML(article.titre)}</h2>
+                        <p>${echapperHTML(article.contenu)}</p>
+                        <small>Publié le : ${article.date_publication}</small>
+                        <div class="article-actions">
+                            <a href="/modifier-article.php?id=${article.id}" class="btn btn-secondary">Modifier</a>
+                            <a href="#" class="btn btn-danger delete-link" data-id="${article.id}">Supprimer</a>
+                        </div>`; // Note: le lien modifier pointe vers la racine, assure-toi que ton serveur est configuré pour ça.
+                        container.appendChild(articleElement);
+                    });
+
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des articles:', error);
+                    document.getElementById('articles-container').innerHTML = 
+                    '<p>Impossible de charger les articles pour le moment.</p>';
+                });
+        }
+
+        // Fonction de sécurité équivalente à htmlspecialchars en JS (anti-XSS)
+        // Correction: La fonction retournait un objet au lieu d'une chaîne.
+        function echapperHTML(str){
+            if (typeof str !== 'string') return '';
+            return str.replace(/[&<>'"]/g,
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag));
+        }
+
+        // --- Gestion de la modale de suppression ---
+        const deleteModal = document.getElementById('deleteModal');
+        const closeButton = document.querySelector('.close-button');
+        const cancelDelete = document.getElementById('cancelDelete');
+        const confirmDelete = document.getElementById('confirmDelete');
+        let articleIdToDelete = null;
+        let articleElementToDelete = null;
+
+        // Utilisation de la délégation d'événements pour les liens de suppression
+        document.getElementById('articles-container').addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('delete-link')) {
+                e.preventDefault();
+                articleIdToDelete = e.target.dataset.id;
+                articleElementToDelete = e.target.closest('article');
+                deleteModal.style.display = 'block';
+            }
+        });
+
+        const closeModal = () => deleteModal.style.display = 'none';
+        closeButton.addEventListener('click', closeModal);
+        cancelDelete.addEventListener('click', closeModal);
+        window.addEventListener('click', (e) => {
+            if (e.target === deleteModal) closeModal();
+        });
+
+        confirmDelete.addEventListener('click', function() {
+            // Assurez-vous que le chemin vers votre script de suppression est correct
+            fetch(`../../backend/supprimer.php?id=${articleIdToDelete}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        articleElementToDelete.remove(); // Supprime l'article du DOM
+                    } else {
+                        alert(data.message || 'Une erreur est survenue.');
+                    }
+                    closeModal();
+                });
+        });
+    </script>
+</body>
+</html>
